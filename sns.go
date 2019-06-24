@@ -8,7 +8,6 @@ import (
 var (
 	ErrInvalidRecords = errors.New("invalid records")
 	ErrInvalidMessage = errors.New("ivnalid records")
-	ErrInvalidSubject = errors.New("invalid subject")
 )
 
 var sampleMessage = `
@@ -51,7 +50,7 @@ type SNS struct {
 	Type              string                 `json:"Type"`
 	MessageID         string                 `json:"MessageId"`
 	TopicARN          string                 `json:"TopicArn"`
-	Subject           string                 `json:"Subject"`
+	Subject           string                 `json:"Subject,omitempty"`
 	Message           string                 `json:"Message"`
 	Timestamp         time.Time              `json:"Timestamp"`
 	SignatureVersion  string                 `json:"SignatureVersion"`
@@ -68,8 +67,6 @@ func (m SNSMessage) Validate() error {
 		return ErrInvalidRecords
 	case m.Records[0].SNS.Message == "":
 		return ErrInvalidMessage
-	case m.Records[0].SNS.Subject == "":
-		return ErrInvalidSubject
 	default:
 		return nil
 	}

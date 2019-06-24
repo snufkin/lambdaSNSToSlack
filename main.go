@@ -20,6 +20,8 @@ var (
 )
 
 func Handler(request SNSMessage) error {
+	var payload = SlackPayload{}
+
 	log.Printf("processing message from SNS: %v\n", request)
 	if err := request.Validate(); err != nil {
 		return err
@@ -29,9 +31,18 @@ func Handler(request SNSMessage) error {
 		return ErrSlackWebhookNotFound
 	}
 	input := request.Records[0].SNS
-	payload := SlackPayload{
-		Text: fmt.Sprintf("%s: %s", input.Subject, input.Message),
+
+	// Subject is optional in some SNS messages.
+	if input.Subject == "" {
+		payload = SlackPayload{
+			Text: input.Message,
+		}
+	} else {
+		payload = SlackPayload{
+			Text: fmt.Sprintf("%s: %s", input.Subject, input.Message),
+		}
 	}
+
 	payloadJSON, _ := json.Marshal(payload)
 	resp, err := http.Post(slackURL, "application/json", bytes.NewBuffer(payloadJSON))
 	if err != nil {
